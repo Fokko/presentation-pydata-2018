@@ -2,13 +2,15 @@
 
 # PyData 2018
 
+# Amsterdam
+
 ## Elegant data pipelining with Apache Airflow
 
 ---
 
 Imagine you are using machine learning models that need conversion rates for currencies. This you then use for advice to your customers.
 
-For your business it is important that you are able to explain to your customer how you got to a certain decision. 
+For your business it is important that you are able to explain to your customer how you got to a certain decision.
 
 In your data pipelines this means even more emphasis on reproducibility and replicability which require idempotency of your tasks
 
@@ -16,12 +18,12 @@ In your data pipelines this means even more emphasis on reproducibility and repl
 
 # Apache Airflow (incubating)
 
-- Programatically task based workflow scheduling
+- Programmatically task based workflow scheduling
 - Developed by Airbnb in 2015, moved to Apache in 2016
-- We love open source
 - {ETL, Machine Learning, Predictive, General} pipeline
-- Used by 120+ companies, among Airbnb, ING, Lyft, LinkedIn, Paypal, WePay, HBO and more
+- Used by 120+ companies, including Airbnb, ING, Lyft, LinkedIn, Paypal, Reddit and more
 - 462 contributors and growing
+- We love open source
 
 ---
 
@@ -33,60 +35,46 @@ In your data pipelines this means even more emphasis on reproducibility and repl
 
 ---
 
-# What does elegant mean?
-
-- Reproduceability
-- Lineage
-- Future proof
-- Robust against changes 
+![fit](job.png)
 
 ---
 
-## Functional programming
+# What does elegant mean?
 
-Learnings from FP:
+- Reproducible
+- Future proof
+- Robust against changes
+- Lineage
+
+---
+
+## Functional Programming
+
+Learnings:
 
 - Model transformations a functions
-- Write repeateable idempotent tasks
+- Repeateable, idempotent functions
 - Eliminate side effects
 
 ---
 
 # Transformations as a function
 
-Strictly define the input and output:
+Model the operation an a mathematical function:
 
 $$
 f(x) \rightarrow y
 $$
 
-By setting up a contract of the function, the output can be easily asserted based on a given input. Avoid external state and mutable data so it can be tested and reasoned about in isolation. This should give a determinstic and idempotent building block for your DAG. A specific version of the code, should give the same result.
+- No changing of state
+- No mutable data
+- Easier to reason about and test
 
---- 
+^ By setting up a contract of the function, the output can be easily asserted based on a given input. Avoid external state and mutable data so it can be tested and reasoned about in isolation. This should give a determinstic and idempotent building block for your DAG. A specific version of the code, should give the same result.
 
-# Write idempotent tasks
-
-- Never append table, but overwrite the partition
-
-```sql
-INSERT OVERWRITE TABLE crypto
-    PARTITION(day='{{ ds }}')
-SELECT 
-    w.address    address,
-    w.currency   currency
-    w.btc        btc,
-    r.usd        usd
-FROM wallet w
-JOIN currency_exchange_rates r USING(currency)
-WHERE day = '{{ ds }}'
-```
 ---
 
-# Avoid state and mutability
-
-- Avoid updates to past data
-- Process data on immutable snapshots 
-- Operators should be versioned in order to version data
+# Avoid external state
 
 Good:
 ```python
@@ -103,6 +91,26 @@ get_currencyrrency = SimpleHttpOperator(
     endpoint='https://api.coindesk.com/v1/bpi/currentprice.json',
     dag=dag
 )
+```
+
+---
+
+# Write idempotent tasks
+
+- Never append, but overwrite the partition
+- Easier to paralleize
+
+```sql
+INSERT OVERWRITE TABLE crypto
+    PARTITION(day='{{ ds }}')
+SELECT
+    w.address    address,
+    w.currency   currency
+    w.btc        btc,
+    r.usd        usd
+FROM wallet w
+JOIN currency_exchange_rates r USING(currency)
+WHERE day = '{{ ds }}'
 ```
 
 ---
@@ -154,7 +162,7 @@ op2 = SparkSubmitOperator(task_id="load_into_table",
                           outlets={"datasets": [outlet,]},
                           sql=sql)
 op2.set_upstream(op1)
-             
+
 outlet = Table()
 op3 = DruidOperator(inlets={"auto": True},
                    outlets={"datasets": [outlet,])
@@ -162,4 +170,4 @@ op3 = DruidOperator(inlets={"auto": True},
 ---
 
 ## Enterprise ;-)
-- Save it is somewhere 
+- Save it is somewhere
