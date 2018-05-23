@@ -48,10 +48,10 @@ In your data pipelines this means even more emphasis on reproducibility and repl
 
 # What does elegant mean?
 
-- Reproducible
-- Future proof
-- Robust against changes
-- Lineage
+- Reproducible: idempotent tasks and data
+- Future proof: backfilling, versioning
+- Robust against changes: easy changes to DAGs, e.g. adding, removing or changing tasks
+- Clarity: transparency where data resides, what it means and where it flows
 
 ---
 
@@ -106,7 +106,7 @@ bad_current_currency = SimpleHttpOperator(
 # Write idempotent tasks
 
 - Never append, but overwrite the partition
-- Easier to paralleize
+- Easier to parallelise
 
 ```sql
 INSERT OVERWRITE TABLE crypto
@@ -147,12 +147,15 @@ WHERE day = '{{ ds }}'
 
 # Changing the code over time
 
-- Previously DAG runs can be repeated with new code
+- Previously DAG runs can be repeated with new code. 
 - Data can be repaired by rerunning the new code, either by clearing tasks or doing backfills.
+- Prerequisite: you tasks are idempotent and you have no side effects
 
 ---
+# Atlas screenshot here
+---
 
-# Lineage
+# Clarity by Lineage
 
 Answers the question for a developer:
 
@@ -162,6 +165,9 @@ Answers the question for a developer:
 
 - Where did I get the data from?
 	- We need to store this somewhere
+
+---
+# Atlas screenshot
 
 ---
 
@@ -204,5 +210,5 @@ op3 = DruidOperator(inlets={"auto": True},
 ```
 ---
 
-## Enterprise ;-)
-- Save it is somewhere
+# Thank you!
+# We are hiring! 
