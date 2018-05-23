@@ -35,6 +35,17 @@ In your data pipelines this means even more emphasis on reproducibility and repl
 
 ---
 
+# About us
+
+- Fokko Driesprong (fokko.driesprong@godatadriven.com), Apache Airflow Committer 
+- Bolke de Bruin (bolke.de.bruin@ing.com), Apache Airflow Committer
+
+# Why is this important?
+
+It isn't really :-).
+
+---
+
 ![fit](job.png)
 
 ---
@@ -52,7 +63,7 @@ In your data pipelines this means even more emphasis on reproducibility and repl
 
 Learnings:
 
-- Model transformations a functions
+- Model transformations as functions
 - Repeateable, idempotent functions
 - Eliminate side effects
 
@@ -60,7 +71,7 @@ Learnings:
 
 # Transformations as a function
 
-Model the operation an a mathematical function:
+Model the operation as a mathematical function:
 
 $$
 f(x) \rightarrow y
@@ -74,19 +85,20 @@ $$
 
 ---
 
-# Avoid external state
+# Avoid external state 
 
-Good:
 ```python
-get_currencyrrency = SimpleHttpOperator(
+good_current_currency = SimpleHttpOperator(
     task_id='get_currency',
-    endpoint='https://api.coindesk.com/v1/bpi/historical/close.json?start={{ ds }}&end={{ ds }}',
+    endpoint='https://api.coindesk.com/v1/bpi/historical/close.json?
+    start={{ ds }}&end={{ ds }}',
     dag=dag
 )
 ```
-Bad:
+
+
 ```python
-get_currencyrrency = SimpleHttpOperator(
+bad_current_currency = SimpleHttpOperator(
     task_id='get_currency',
     endpoint='https://api.coindesk.com/v1/bpi/currentprice.json',
     dag=dag
@@ -110,6 +122,28 @@ SELECT
     r.usd        usd
 FROM wallet w
 JOIN currency_exchange_rates r USING(currency)
+WHERE day = '{{ ds }}'
+```
+
+---
+
+# Fully templated (from 1.11)
+
+```
+{{ set table = outlets['table'] }}
+{{ set w = inlets['wallet'] }}
+{{ set r = inlets['currency_exchange_rates'] }}
+```
+```sql
+INSERT OVERWRITE TABLE {{ table.name }}
+    PARTITION(day='{{ ds }}')
+SELECT
+    {{ w.address }}   {{ table.address }},
+    {{ w.currency }}  {{ table.currency }}
+    {{ w.btc }}       {{ table.btc }},
+    {{ r.usd }}       {{ table.usd }}
+FROM {{ w.name }}
+JOIN {{ r.name }} USING({{ table.currency }})
 WHERE day = '{{ ds }}'
 ```
 
