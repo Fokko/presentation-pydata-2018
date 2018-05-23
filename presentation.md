@@ -27,22 +27,18 @@ In your data pipelines this means even more emphasis on reproducibility and repl
 
 ---
 
+# About us
+
+- Fokko Driesprong (fokko.driesprong@godatadriven.com), Apache Airflow Committer 
+- Bolke de Bruin (bolke.de.bruin@ing.com), Apache Airflow Committer, CTO Wholesale Banking Advanced Analytics
+
+---
+
 # Why is this important
 
 - ETL consists of a complex network of dependencies
 - Analytics and batch processing is mission critical
 - Too much time is spend on monitoring and troubleshooting jobs
-
----
-
-# About us
-
-- Fokko Driesprong (fokko.driesprong@godatadriven.com), Apache Airflow Committer 
-- Bolke de Bruin (bolke.de.bruin@ing.com), Apache Airflow Committer
-
-# Why is this important?
-
-It isn't really :-).
 
 ---
 
@@ -127,7 +123,7 @@ WHERE day = '{{ ds }}'
 
 ---
 
-# Fully templated (from 1.11)
+# Future proof templated (from 1.11)
 
 ```
 {{ set table = outlets['table'] }}
@@ -158,9 +154,14 @@ WHERE day = '{{ ds }}'
 
 # Lineage
 
-Answers the question for a developer
+Answers the question for a developer:
+
 - What is the latest version of the data I need?
+	- So I need to save versions of my data? Yes! 
+```outlet = Table(max_versions=5)```
+
 - Where did I get the data from?
+	- We need to store this somewhere
 
 ---
 
