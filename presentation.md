@@ -19,6 +19,13 @@
 
 ---
 
+# About us
+
+ - Fokko Driesprong (fokko@apache.org), Data Engineer at GoDataDriven and Apache Airflow Committer
+ - Bolke de Bruin (bolke.de.bruin@ing.com), Apache Airflow Committer, CTO Wholesale Banking Advanced Analytics
+
+---
+
 # Why is this important
 
 - ETL consists of a complex network of dependencies
@@ -50,7 +57,7 @@
 
 # Transformations as a pure function
 
-Model the operation an a mathematical function:
+Model the operation as a mathematical function:
 
 $$
 f(x) \rightarrow y
@@ -86,20 +93,16 @@ def impure_add_one(i):
 
 # Avoid external state
 
-Good:
-
 ```python
-get_currencyrrency = SimpleHttpOperator(
+good_current_currency = SimpleHttpOperator(
     task_id='get_currency',
     endpoint='https://api.coindesk.com/v1/bpi/historical/close.json?start={{ ds }}&end={{ ds }}',
     dag=dag
 )
 ```
 
-Bad:
-
 ```python
-get_currencyrrency = SimpleHttpOperator(
+bad_current_currency = SimpleHttpOperator(
     task_id='get_currency',
     endpoint='https://api.coindesk.com/v1/bpi/currentprice.json',
     dag=dag
@@ -144,6 +147,27 @@ WHERE day = '{{ ds }}'
 
 ---
 
+# Future proof templated (from 1.11)	+![](tables.png)
+
+```sql
+{{ set table = outlets['table'] }}
+{{ set w = inlets['wallet'] }}
+{{ set r = inlets['currency_exchange_rates'] }}
+
+INSERT OVERWRITE TABLE {{ table.name }}
+    PARTITION(day='{{ ds }}')
+SELECT
+    {{ w.address }}   {{ table.address }},
+    {{ w.currency }}  {{ table.currency }}
+    {{ w.btc }}       {{ table.btc }},
+    {{ r.usd }}       {{ table.usd }}
+FROM {{ w.name }}
+JOIN {{ r.name }} USING({{ table.currency }})
+WHERE day = '{{ ds }}'
+```
+
+---
+
 ![](tables.png)
 
 ---
@@ -166,7 +190,9 @@ WHERE day = '{{ ds }}'
 
 Answers the question for a developer
 - What is the latest version of the data I need?
+-  So I need to save versions of my data? Yes!  ```outlet = Table(max_versions=5)```
 - Where did I get the data from?
+- We need to store this somewhere
 
 ---
 
