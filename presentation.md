@@ -33,10 +33,10 @@
 
 # What does elegant mean?
 
-- Reproducible
-- Future proof
-- Robust against changes
-- Lineage
+- Reproducible: idempotent tasks and data
+- Future proof: backfilling, versioning
+- Robust against changes: easy changes to DAGs, e.g. adding, removing or changing tasks
+- Clarity: transparency where data resides, what it means and where it flows
 
 ^ Imagine you are using machine learning models that need conversion rates for currencies. This you then use for advice to your customers. For your business it is important that you are able to explain to your customer how you got to a certain decision. In your data pipelines this means even more emphasis on reproducibility and replicability which require idempotency of your tasks.
 
@@ -127,7 +127,7 @@ UPDATE users SET active = NOT active
 # Be immutable
 
 - Never append, but overwrite the partition
-- Easier to parallelize
+- Easier to parallelise
 
 ```sql
 INSERT OVERWRITE TABLE crypto
@@ -150,7 +150,7 @@ WHERE day = '{{ ds }}'
 
 # Changing the code over time
 
-- Previously DAG runs can be repeated with new code
+- Previously DAG runs can be repeated with new code.
 - Data can be repaired by rerunning the new code, either by clearing tasks or doing backfills.
 - Reproducibility is critical
   - Legal standpoint
@@ -158,7 +158,11 @@ WHERE day = '{{ ds }}'
 
 ---
 
-# Lineage
+# Atlas screenshot here
+
+---
+
+# Clarity by Lineage
 
 Answers the question for a developer
 - What is the latest version of the data I need?
@@ -203,10 +207,6 @@ outlet = Table()
 op3 = DruidOperator(inlets={"auto": True},
                    outlets={"datasets": [outlet,])
 ```
----
-
-## Enterprise ;-)
-- Save it is somewhere
 
 ---
 
@@ -219,3 +219,8 @@ Build data pipelines that:
 - have no side-effects;
 - use-immutable sources and destinations;
 - don't do update, upsert, append or delete
+
+---
+
+# Thank you!
+# We are hiring!
