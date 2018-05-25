@@ -10,6 +10,8 @@
 
 # Apache Airflow (incubating)
 
+![fit right](facts.png)
+
 - Programmatically task based workflow scheduling
 - Developed by Airbnb in 2015, moved to Apache in 2016
 - {ETL, Machine Learning, Predictive, General} pipeline
@@ -96,7 +98,8 @@ def impure_add_one(i):
 ```python
 good_current_currency = SimpleHttpOperator(
     task_id='get_currency',
-    endpoint='https://api.coindesk.com/v1/bpi/historical/close.json?start={{ ds }}&end={{ ds }}',
+    endpoint='https://api.coindesk.com/v1/bpi/historical/close.json?
+    start={{ ds }}&end={{ ds }}',
     dag=dag
 )
 ```
@@ -149,11 +152,12 @@ WHERE day = '{{ ds }}'
 
 # Future proof templated (from 1.11)	+![](tables.png)
 
-```sql
+```
 {{ set table = outlets['table'] }}
 {{ set w = inlets['wallet'] }}
 {{ set r = inlets['currency_exchange_rates'] }}
-
+```
+```sql
 INSERT OVERWRITE TABLE {{ table.name }}
     PARTITION(day='{{ ds }}')
 SELECT
@@ -188,10 +192,14 @@ WHERE day = '{{ ds }}'
 
 # Clarity by Lineage
 
-Answers the question for a developer
+Answers the following questions for a developer
+
 - What is the latest version of the data I need?
--  So I need to save versions of my data? Yes!  ```outlet = Table(max_versions=5)```
+-  So I need to save versions of my data? Yes!  
+      ```outlet = Table(max_versions=5)```
+
 - Where did I get the data from?
+
 - We need to store this somewhere
 
 ---
