@@ -8,14 +8,6 @@
 
 ---
 
-Imagine you are using machine learning models that need conversion rates for currencies. This you then use for advice to your customers.
-
-For your business it is important that you are able to explain to your customer how you got to a certain decision.
-
-In your data pipelines this means even more emphasis on reproducibility and replicability which require idempotency of your tasks
-
----
-
 # Apache Airflow (incubating)
 
 - Programmatically task based workflow scheduling
@@ -24,13 +16,6 @@ In your data pipelines this means even more emphasis on reproducibility and repl
 - Used by 120+ companies, including Airbnb, ING, Lyft, LinkedIn, Paypal, Reddit and more
 - 462 contributors and growing
 - We love open source
-
----
-
-# About us
-
-- Fokko Driesprong (fokko.driesprong@godatadriven.com), Apache Airflow Committer 
-- Bolke de Bruin (bolke.de.bruin@ing.com), Apache Airflow Committer, CTO Wholesale Banking Advanced Analytics
 
 ---
 
@@ -48,53 +33,73 @@ In your data pipelines this means even more emphasis on reproducibility and repl
 
 # What does elegant mean?
 
-- Reproducible: idempotent tasks and data
-- Future proof: backfilling, versioning
-- Robust against changes: easy changes to DAGs, e.g. adding, removing or changing tasks
-- Clarity: transparency where data resides, what it means and where it flows
+- Reproducible
+- Future proof
+- Robust against changes
+- Lineage
+
+^ Imagine you are using machine learning models that need conversion rates for currencies. This you then use for advice to your customers. For your business it is important that you are able to explain to your customer how you got to a certain decision. In your data pipelines this means even more emphasis on reproducibility and replicability which require idempotency of your tasks.
 
 ---
 
-## Functional Programming
+# Functional Programming
 
-Learnings:
-
-- Model transformations as functions
-- Repeateable, idempotent functions
-- Eliminate side effects
+![](functional.png)
 
 ---
 
-# Transformations as a function
+# Transformations as a pure function
 
-Model the operation as a mathematical function:
+Model the operation an a mathematical function:
 
 $$
 f(x) \rightarrow y
 $$
 
-- No changing of state
-- No mutable data
-- Easier to reason about and test
+- Defined input and output
+- No side effects
+- Easier to reason about and (unit) test
 
 ^ By setting up a contract of the function, the output can be easily asserted based on a given input. Avoid external state and mutable data so it can be tested and reasoned about in isolation. This should give a determinstic and idempotent building block for your DAG. A specific version of the code, should give the same result.
 
 ---
 
-# Avoid external state 
+# Side effects
+
+For example, good:
 
 ```python
-good_current_currency = SimpleHttpOperator(
+def pure_add_one(i):
+  return 1 + i
+```
+
+Bad:
+
+```python
+counter = 0
+def impure_add_one(i):
+  counter += 1
+  return counter  
+```
+
+---
+
+# Avoid external state
+
+Good:
+
+```python
+get_currencyrrency = SimpleHttpOperator(
     task_id='get_currency',
-    endpoint='https://api.coindesk.com/v1/bpi/historical/close.json?
-    start={{ ds }}&end={{ ds }}',
+    endpoint='https://api.coindesk.com/v1/bpi/historical/close.json?start={{ ds }}&end={{ ds }}',
     dag=dag
 )
 ```
 
+Bad:
 
 ```python
-bad_current_currency = SimpleHttpOperator(
+get_currencyrrency = SimpleHttpOperator(
     task_id='get_currency',
     endpoint='https://api.coindesk.com/v1/bpi/currentprice.json',
     dag=dag
@@ -103,10 +108,26 @@ bad_current_currency = SimpleHttpOperator(
 
 ---
 
-# Write idempotent tasks
+# Be idempotent in your actions
+
+Good:
+
+```
+UPDATE users SET active = false
+```
+
+Bad:
+
+```
+UPDATE users SET active = NOT active
+```
+
+---
+
+# Be immutable
 
 - Never append, but overwrite the partition
-- Easier to parallelise
+- Easier to parallelize
 
 ```sql
 INSERT OVERWRITE TABLE crypto
@@ -123,51 +144,25 @@ WHERE day = '{{ ds }}'
 
 ---
 
-# Future proof templated (from 1.11)
-
-```
-{{ set table = outlets['table'] }}
-{{ set w = inlets['wallet'] }}
-{{ set r = inlets['currency_exchange_rates'] }}
-```
-```sql
-INSERT OVERWRITE TABLE {{ table.name }}
-    PARTITION(day='{{ ds }}')
-SELECT
-    {{ w.address }}   {{ table.address }},
-    {{ w.currency }}  {{ table.currency }}
-    {{ w.btc }}       {{ table.btc }},
-    {{ r.usd }}       {{ table.usd }}
-FROM {{ w.name }}
-JOIN {{ r.name }} USING({{ table.currency }})
-WHERE day = '{{ ds }}'
-```
+![](tables.png)
 
 ---
 
 # Changing the code over time
 
-- Previously DAG runs can be repeated with new code. 
+- Previously DAG runs can be repeated with new code
 - Data can be repaired by rerunning the new code, either by clearing tasks or doing backfills.
-- Prerequisite: you tasks are idempotent and you have no side effects
+- Reproducibility is critical
+  - Legal standpoint
+  - To keep sane
 
 ---
-# Atlas screenshot here
----
 
-# Clarity by Lineage
+# Lineage
 
-Answers the question for a developer:
-
+Answers the question for a developer
 - What is the latest version of the data I need?
-	- So I need to save versions of my data? Yes! 
-```outlet = Table(max_versions=5)```
-
 - Where did I get the data from?
-	- We need to store this somewhere
-
----
-# Atlas screenshot
 
 ---
 
@@ -210,5 +205,17 @@ op3 = DruidOperator(inlets={"auto": True},
 ```
 ---
 
-# Thank you!
-# We are hiring! 
+## Enterprise ;-)
+- Save it is somewhere
+
+---
+
+# Conclusion
+
+Build data pipelines that:
+
+- are idemptotent;
+- are determinstic;
+- have no side-effects;
+- use-immutable sources and destinations;
+- don't do update, upsert, append or delete
