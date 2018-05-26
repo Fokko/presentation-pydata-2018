@@ -151,7 +151,7 @@ WHERE day = '{{ ds }}'
 
 ---
 
-# Future proof templated (from 1.11)	+![](tables.png)
+# Future proof templated (from 1.10+)	+![](tables.png)
 
 ```
 {{ set table = outlets['table'] }}
@@ -187,64 +187,74 @@ WHERE day = '{{ ds }}'
 
 ---
 
-# Atlas screenshot here
-
----
-
 # Clarity by Lineage
 
 Answers the following questions for a developer
 
 - What is the latest version of the data I need?
--  So I need to save versions of my data? Yes!  
+  So I need to save versions of my data? Yes!  
       ```outlet = Table(max_versions=5)```
 
 - Where did I get the data from?
 
-- We need to store this somewhere
+- We need to store this somewhere (e.g. Apache Atlas or something else)
 
 ---
 
-# Examples
+![fit](atlas_not_versioned.png)
+ 
+---
+
+## Bringing it together
+Our DAG consists of 3 tasks
+1. Download currency rate data from the web
+2. Run our Machine Learning model that is using Spark
+3. Drop the data in Apache Druid for OLAP
 
 ---
 
-## Beginner
-- How do you start well
-
----
-
-## Intermediate
-- Dynamic DAGs
-
----
-
-## Expert
-- Automatic Metadata extraction and Lineage
-
+## Downloading the currency data
 ```python
-inlet = File("https://api.coindesk.com/v1/bpi/historical
-             /close.json?start={{ ds }}&end={{ ds }}")
-outlet = File("s3a://bucketx/currency_rates")
+inlet = File("https://api.coindesk.com/v1/bpi/historical"
+             "/close.json?start={{ execution_date }}"
+             "&end={{ execution_date }}")
+outlet = File("s3a://bucket/currency_rates.{{ execution_date }}"
+              ".{{ version }}", max_versions=5)
 op1 = SimpleHttpOperator(task_id="get_currency",
-                         endpoint=inlet.fs_path,
                          inlets={"datasets": [inlet,]},
                          outlet={"datasets": [outlets,]})
-
-outlet = File("s3a://bucketx/sparkified/")
-op2 = SparkSubmitOperator(task_id="load_into_table",
-                          inlets={"auto": True},
-                          outlets={"datasets": [outlet,]},
-                          sql=sql)
-op2.set_upstream(op1)
-
-outlet = Table()
-op3 = DruidOperator(inlets={"auto": True},
-                   outlets={"datasets": [outlet,])
 ```
 
 ---
 
+## Run Machine Learning model
+```python
+outlet = File("s3a://bucket/prediction.{{ execution_date }}."
+              "{{ version }}", max_versions=5)
+op2 = SparkSubmitOperator(task_id="create_predictions",
+                          inlets={"auto": True},
+                          outlets={"datasets": [outlet,]},
+                          application="create_currency_predictions")
+op2.set_upstream(op1)
+```
+
+---
+
+## Drop the data into Druid
+```python
+outlet = Table("invest_predictions", max_versions=5)
+op3 = DruidOperator(inlets={"auto": True},
+                    outlets={"datasets": [outlet,])
+op3.set_upstream(op2)
+```
+
+---
+
+## The result
+![inline](final_dag.png)
+![inline fill](final_lineage.png)
+
+---
 # Conclusion
 
 Build data pipelines that:
@@ -259,3 +269,5 @@ Build data pipelines that:
 
 # Thank you!
 # We are hiring!
+### bolke.de.bruin@ing.com
+### fokkodriesprong@godatadriven.com
