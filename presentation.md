@@ -211,6 +211,13 @@ Our DAG consists of 3 tasks
 2. Run our Machine Learning model that is using Spark
 3. Drop the data in Apache Druid for OLAP
 
+```python
+args = {'start_date': airflow.utils.dates.days_ago(2)}
+dag = DAG(
+    dag_id='build_currency_preditions', default_args=args,
+    schedule_interval='0 0 * * *')
+```
+
 ---
 
 ## Downloading the currency data
@@ -220,7 +227,7 @@ inlet = File("https://api.coindesk.com/v1/bpi/historical"
              "&end={{ execution_date }}")
 outlet = File("s3a://bucket/currency_rates.{{ execution_date }}"
               ".{{ version }}", max_versions=5)
-op1 = SimpleHttpOperator(task_id="get_currency",
+op1 = SimpleHttpOperator(dag=dag, task_id="get_currency",
                          inlets={"datasets": [inlet,]},
                          outlet={"datasets": [outlets,]})
 ```
@@ -231,7 +238,8 @@ op1 = SimpleHttpOperator(task_id="get_currency",
 ```python
 outlet = File("s3a://bucket/prediction.{{ execution_date }}."
               "{{ version }}", max_versions=5)
-op2 = SparkSubmitOperator(task_id="create_predictions",
+op2 = SparkSubmitOperator(dag=dag,
+                          task_id="create_predictions",
                           inlets={"auto": True},
                           outlets={"datasets": [outlet,]},
                           application="create_currency_predictions")
@@ -243,7 +251,9 @@ op2.set_upstream(op1)
 ## Drop the data into Druid
 ```python
 outlet = Table("invest_predictions", max_versions=5)
-op3 = DruidOperator(inlets={"auto": True},
+op3 = DruidOperator(dag=dag,
+                    task_id="load_into_druid",
+                    inlets={"auto": True},
                     outlets={"datasets": [outlet,])
 op3.set_upstream(op2)
 ```
