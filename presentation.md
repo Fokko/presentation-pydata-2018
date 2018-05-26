@@ -1,3 +1,4 @@
+autoscale: true
 ![](airflow.png)
 
 # PyData 2018
@@ -118,13 +119,13 @@ bad_current_currency = SimpleHttpOperator(
 
 Good:
 
-```
+```sql
 UPDATE users SET active = false
 ```
 
 Bad:
 
-```
+```sql
 UPDATE users SET active = NOT active
 ```
 
