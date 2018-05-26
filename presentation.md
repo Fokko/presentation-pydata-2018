@@ -9,6 +9,19 @@ autoscale: true
 
 ---
 
+![](airflow.png)
+
+# About us
+
+ - **Fokko Driesprong** (fokko@apache.org)
+   Apache Airflow Committer and Data Engineer at GoDataDriven
+ - **Bolke de Bruin** (bolke.de.bruin@ing.com)
+   Apache Airflow Committer, CTO Wholesale Banking Advanced Analytics at ING
+
+---
+
+![](airflow.png)
+
 # Apache Airflow (incubating)
 
 ![fit right](facts.png)
@@ -18,16 +31,15 @@ autoscale: true
 - {ETL, Machine Learning, Predictive, General} pipeline
 - Used by 120+ companies, including Airbnb, ING, Lyft, LinkedIn, Paypal, Reddit and more
 - 462 contributors and growing
-- We love open source
+- Fully open source
 
 ---
 
-# About us
-
- - Fokko Driesprong (fokko@apache.org), Data Engineer at GoDataDriven and Apache Airflow Committer
- - Bolke de Bruin (bolke.de.bruin@ing.com), Apache Airflow Committer, CTO Wholesale Banking Advanced Analytics
+![fit](job.png)
 
 ---
+
+![](airflow.png)
 
 # Why is this important
 
@@ -37,26 +49,26 @@ autoscale: true
 
 ---
 
-![fit](job.png)
-
----
+![](airflow.png)
 
 # What does elegant mean?
 
-- Reproducible: idempotent tasks and data
-- Future proof: backfilling, versioning
-- Robust against changes: easy changes to DAGs, e.g. adding, removing or changing tasks
-- Clarity: transparency where data resides, what it means and where it flows
+- **Reproducible:** determinstic and idempotent
+- **Future proof:** backfilling, versioning
+- **Robust against changes:** easy changes to DAGs, e.g. adding, removing or changing tasks
+- **Clarity:** transparency where data resides, what it means and where it flows
 
 ^ Imagine you are using machine learning models that need conversion rates for currencies. This you then use for advice to your customers. For your business it is important that you are able to explain to your customer how you got to a certain decision. In your data pipelines this means even more emphasis on reproducibility and replicability which require idempotency of your tasks.
 
 ---
 
-# Functional Programming
+# **Functional Programming**
 
 ![](functional.png)
 
 ---
+
+![](airflow.png)
 
 # Transformations as a pure function
 
@@ -67,51 +79,31 @@ f(x) \rightarrow y
 $$
 
 - Defined input and output
-- No side effects
 - Easier to reason about and (unit) test
 
 ^ By setting up a contract of the function, the output can be easily asserted based on a given input. Avoid external state and mutable data so it can be tested and reasoned about in isolation. This should give a determinstic and idempotent building block for your DAG. A specific version of the code, should give the same result.
 
 ---
 
-# Side effects
+# No side effects
 
-For example, good:
+For example, bad:
+
+```python
+counter = 0
+def impure_add_one():
+  counter += 1
+  return counter  
+```
+
+Good:
 
 ```python
 def pure_add_one(i):
   return 1 + i
 ```
 
-Bad:
-
-```python
-counter = 0
-def impure_add_one(i):
-  counter += 1
-  return counter  
-```
-
----
-
-# Avoid external state
-
-```python
-good_current_currency = SimpleHttpOperator(
-    task_id='get_currency',
-    endpoint='https://api.coindesk.com/v1/bpi/historical/close.json?
-    start={{ ds }}&end={{ ds }}',
-    dag=dag
-)
-```
-
-```python
-bad_current_currency = SimpleHttpOperator(
-    task_id='get_currency',
-    endpoint='https://api.coindesk.com/v1/bpi/currentprice.json',
-    dag=dag
-)
-```
+^ Functional programming brings clarity. When functions are “pure” — meaning they do not have side-effects — they can be written, tested, reasoned-about and debugged in isolation, without the need to understand external context or history of events surrounding its execution.
 
 ---
 
@@ -127,6 +119,28 @@ Bad:
 
 ```sql
 UPDATE users SET active = NOT active
+```
+
+^ Counting in an external database
+
+---
+
+# Add dates throughout the pipeline
+
+```python
+good_current_currency = SimpleHttpOperator(
+    task_id='get_currency',
+    endpoint='https://api.coindesk.com/v1/bpi/historical/close.json?start={{ ds }}&end={{ ds }}',
+    dag=dag
+)
+```
+
+```python
+bad_current_currency = SimpleHttpOperator(
+    task_id='get_currency',
+    endpoint='https://api.coindesk.com/v1/bpi/currentprice.json',
+    dag=dag
+)
 ```
 
 ---
@@ -151,7 +165,11 @@ WHERE day = '{{ ds }}'
 
 ---
 
-# Future proof templated (from 1.10+)	+![](tables.png)
+![](tables.png)
+
+---
+
+# Future proof templated (from 1.10+)
 
 ```
 {{ set table = outlets['table'] }}
@@ -170,10 +188,6 @@ FROM {{ w.name }}
 JOIN {{ r.name }} USING({{ table.currency }})
 WHERE day = '{{ ds }}'
 ```
-
----
-
-![](tables.png)
 
 ---
 
@@ -202,7 +216,7 @@ Answers the following questions for a developer
 ---
 
 ![fit](atlas_not_versioned.png)
- 
+
 ---
 
 ## Bringing it together
