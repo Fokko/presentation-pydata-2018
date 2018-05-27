@@ -58,7 +58,12 @@ autoscale: true
 - **Robust against changes:** easy changes to DAGs, e.g. adding, removing or changing tasks
 - **Clarity:** transparency where data resides, what it means and where it flows
 
-^ Imagine you are using machine learning models that need conversion rates for currencies. This you then use for advice to your customers. For your business it is important that you are able to explain to your customer how you got to a certain decision. In your data pipelines this means even more emphasis on reproducibility and replicability which require idempotency of your tasks.
+---
+# Lets build a pipeline
+
+* Imagine you are using machine learning models that need conversion rates for currencies. 
+* These you use for advice to your customers. 
+* For your business it is important that you are able to explain to your customer how you got to a certain decision. 
 
 ---
 
@@ -130,7 +135,8 @@ UPDATE users SET active = NOT active
 ```python
 good_current_currency = SimpleHttpOperator(
     task_id='get_currency',
-    endpoint='https://api.coindesk.com/v1/bpi/historical/close.json?start={{ ds }}&end={{ ds }}',
+    endpoint='https://api.coindesk.com/v1/bpi/historical/close.json?'
+             'start={{ ds }}&end={{ ds }}',
     dag=dag
 )
 ```
