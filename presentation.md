@@ -59,13 +59,6 @@ autoscale: true
 - **Clarity:** transparency where data resides, what it means and where it flows
 
 ---
-# Lets build a pipeline
-
-* Imagine you are using machine learning models that need conversion rates for currencies. 
-* These you use for advice to your customers. 
-* For your business it is important that you are able to explain to your customer how you got to a certain decision. 
-
----
 
 # **Functional Programming**
 
@@ -225,16 +218,24 @@ Answers the following questions for a developer
 
 ---
 
+# Lets build a pipeline
+
+* Imagine you are using machine learning models that need conversion rates for currencies. 
+* These you use for advice to your customers. 
+* For your business it is important that you are able to explain to your customer how you got to a certain decision. 
+
+---
+
 ## Bringing it together
 Our DAG consists of 3 tasks
 1. Download currency rate data from the web
-2. Run our Machine Learning model that is using Spark
+2. Run our Machine Learning model using Apache Spark
 3. Drop the data in Apache Druid for OLAP
 
 ```python
 args = {'start_date': airflow.utils.dates.days_ago(2)}
 dag = DAG(
-    dag_id='build_currency_preditions', default_args=args,
+    dag_id='build_currency_predictions', default_args=args,
     schedule_interval='0 0 * * *')
 ```
 
