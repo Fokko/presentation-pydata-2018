@@ -69,7 +69,7 @@ autoscale: true
 
 # **Functional Programming**
 
-![](functional.png)
+![fit](functional_programming.png)
 
 ---
 
