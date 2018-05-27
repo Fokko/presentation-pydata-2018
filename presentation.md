@@ -291,7 +291,7 @@ op3.set_upstream(op2)
 Build data pipelines that:
 
 - are idemptotent;
-- are determinstic;
+- are deterministic;
 - have no side-effects;
 - use-immutable sources and destinations;
 - don't do update, upsert, append or delete
