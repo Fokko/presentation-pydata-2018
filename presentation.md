@@ -129,7 +129,7 @@ UPDATE users SET active = NOT active
 good_current_currency = SimpleHttpOperator(
     task_id='get_currency',
     endpoint='https://api.coindesk.com/v1/bpi/historical/close.json?'
-             'start={{ ds }}&end={{ ds }}',
+             'start={{ execution_date }}&end={{ execution_date }}',
     dag=dag
 )
 ```
